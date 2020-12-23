@@ -16,19 +16,25 @@ router.get('/', function (req, res, next) {
 //  C R (done) U (done)D 
 router.get('/getproducts', function (req, res, next) {
 
-  MongoClient.connect(url,
-    { useUnifiedTopology: true },
-    function (err, db) {
-      if (err) throw err;
-      var dbo = db.db("shopping");
-      dbo.collection("products").find({}, { projection: { _id: 0 } })
-        .toArray(function (err, result) {
-          if (err) throw err;
-          res.json(result);
-          db.close();
-        })
-    }
-  )
+  try {
+    MongoClient.connect(url,
+      { useUnifiedTopology: true },
+      function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("shopping");
+        dbo.collection("products").find({}, { projection: { _id: 0 } })
+          .toArray(function (err, result) {
+            if (err) throw err;
+            res.json(result);
+            console.log((new Date()).toUTCString());
+            db.close();
+          })
+      }
+    )
+  } catch (error) {
+    console.log(error)
+  }
+
 
   // console.log(req)
   // const fileContent = fs.readFileSync('E:\\MERN\\Backend_Shopping_Cart\\test.txt', { encoding: 'utf8', flag: 'r' });
@@ -39,17 +45,42 @@ router.get('/getproducts', function (req, res, next) {
 
 
 
-router.post('/update', function (req, res, next) {
+router.post('/placeOrder', function (req, res, next) {
 
-  console.log(req)
   try {
-    fs.appendFileSync('E:\\MERN\\Backend_Shopping_Cart\\test.txt', req.body.data.vb.dfg.g, { encoding: 'utf8', flag: 'a' });
-    res.json({ filecontent: "file read suss=cfuly" })
-  } catch (err) {
-    res.status(500)
-    res.json({ filecontent: "file read unsuccefukt" })
-  }
+    MongoClient.connect(url,
+      { useUnifiedTopology: true },
+      function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("shopping");
+        var items = JSON.parse(req.query.items);
+        var myquery = 0;
+        var newvalues = 0;
+        var updatedStock = 0;
+        var modifiedCount = 0;
 
+        items.map((elm, i) => {
+          // res.json(elm[1])
+          // console.log(elm.id);
+          myquery = { id: parseInt(elm.id) };
+          updatedStock = ((elm.stock) - 1);
+          newvalues = { $set: { stock: parseInt(updatedStock) } };
+          dbo.collection("products").updateOne(myquery, newvalues, function (err, result) {
+            if (err) throw err;
+            // console.log(result.modifiedCount)
+            modifiedCount += result.modifiedCount;
+            if (i === (items.length - 1)) {
+              res.json(true);
+              // console.log(modifiedCount+" document updated");
+              db.close();
+            }
+
+          });
+        })
+      });
+  } catch (error) {
+    console.log(error)
+  }
 });
 
 
