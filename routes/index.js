@@ -6,15 +6,15 @@ var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
 var url = "mongodb://localhost:27017/";
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-  res.json({ test: "express" })
+// /* GET home page. */
+// router.get('/', function (req, res, next) {
+//   res.json({ test: "express" })
 
-});
+// });
 
 
 //  C R (done) U (done)D 
-router.get('/getproducts', function (req, res, next) {
+router.get('/', function (req, res, next) {
 
   try {
     MongoClient.connect(url,
@@ -22,7 +22,7 @@ router.get('/getproducts', function (req, res, next) {
       function (err, db) {
         if (err) throw err;
         var dbo = db.db("shopping");
-        dbo.collection("products").find({}, { projection: { _id: 0 } })
+        dbo.collection(req.query.request).find({}, { projection: { _id: 0 } })
           .toArray(function (err, result) {
             if (err) throw err;
             res.json(result);
@@ -35,10 +35,6 @@ router.get('/getproducts', function (req, res, next) {
     console.log(error)
   }
 
-
-  // console.log(req)
-  // const fileContent = fs.readFileSync('E:\\MERN\\Backend_Shopping_Cart\\test.txt', { encoding: 'utf8', flag: 'r' });
-  // res.json({ filecontent: fileContent })
 });
 
 
@@ -70,9 +66,14 @@ router.post('/placeOrder', function (req, res, next) {
             // console.log(result.modifiedCount)
             modifiedCount += result.modifiedCount;
             if (i === (items.length - 1)) {
-              res.json(true);
-              // console.log(modifiedCount+" document updated");
-              db.close();
+              dbo.collection("cart").drop(function (err, delOK) {
+                if (err) throw err;
+                if (delOK) console.log("Collection deleted");
+                res.json(true);
+                // console.log(modifiedCount+" document updated");
+                db.close();
+              });
+
             }
 
           });
@@ -84,11 +85,38 @@ router.post('/placeOrder', function (req, res, next) {
 });
 
 
-router.post('/create', function (req, res, next) {
+router.post('/insertToCart', function (req, res, next) {
 
-  var createStream = fs.createWriteStream(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`);
-  createStream.end();
-  res.json({ filecontent: "file created succfuly" })
+  try {
+    MongoClient.connect(url,
+      { useUnifiedTopology: true },
+      function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("shopping");
+        var items = JSON.parse(req.query.items);
+        var data = [{ items }];
+
+        console.log({ items })
+        console.log(data)
+        // items.map((elm, i) => {
+        //   data.push(elm)
+        // })
+
+        dbo.collection("cart").insertMany(data, function (err, result) {
+          if (err) throw err;
+          res.json(true);
+          console.log("Number of documents inserted: " + result.insertedCount);
+          db.close();
+        });
+
+      });
+  } catch (error) {
+    console.log(error)
+  }
+
+  // var createStream = fs.createWriteStream(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`);
+  // createStream.end();
+  // res.json({ filecontent: "file created succfuly" })
 });
 
 
