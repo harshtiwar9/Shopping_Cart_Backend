@@ -38,9 +38,6 @@ router.get('/', function (req, res, next) {
 });
 
 
-
-
-
 router.post('/placeOrder', function (req, res, next) {
 
   try {
@@ -96,13 +93,11 @@ router.post('/insertToCart', function (req, res, next) {
         var items = JSON.parse(req.query.items);
         var data = [{ items }];
 
-        console.log({ items })
-        console.log(data)
         // items.map((elm, i) => {
         //   data.push(elm)
         // })
 
-        dbo.collection("cart").insertMany(data, function (err, result) {
+        dbo.collection("cart").insertMany([items], function (err, result) {
           if (err) throw err;
           res.json(true);
           console.log("Number of documents inserted: " + result.insertedCount);
@@ -123,13 +118,34 @@ router.post('/insertToCart', function (req, res, next) {
 
 
 
-router.delete('/delete', function (req, res, next) {
+router.delete('/removefromcart', function (req, res, next) {
 
-  fs.unlink(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`, (err) => {
-    if (err) throw err;
-    res.json({ filecontent: 'path/file.txt was deleted' })
+  try {
+    MongoClient.connect(url,
+      { useUnifiedTopology: true },
+      function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("shopping");
+        var id = parseInt(req.query.id);
 
-  });
+        var myquery = { id: parseInt(req.query.id) };
+        dbo.collection("cart").deleteOne(myquery, function (err, obj) {
+          if (err) throw err;
+          res.json(true);
+          console.log("1 document deleted");
+          db.close();
+        });
+
+      });
+  } catch (error) {
+    console.log(error)
+  }
+
+  // fs.unlink(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`, (err) => {
+  //   if (err) throw err;
+  //   res.json({ filecontent: 'path/file.txt was deleted' })
+
+  // });
 });
 
 
