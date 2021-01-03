@@ -2,43 +2,26 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var mongo = require('mongodb');
+const { getDetails } = require('../service/getDetails');
 
 var MongoClient = mongo.MongoClient;
 var url = "mongodb://localhost:27017/";
 
-// /* GET home page. */
-// router.get('/', function (req, res, next) {
-//   res.json({ test: "express" })
-
-// });
-
-
-//  C R (done) U (done)D 
-router.get('/', function (req, res, next) {
-
-  try {
-    MongoClient.connect(url,
-      { useUnifiedTopology: true },
-      function (err, db) {
-        if (err) throw err;
-        var dbo = db.db("shopping");
-        dbo.collection(req.query.request).find({}, { projection: { _id: 0 } })
-          .toArray(function (err, result) {
-            if (err) throw err;
-            res.json(result);
-            console.log((new Date()).toUTCString());
-            db.close();
-          })
-      }
-    )
-  } catch (error) {
-    console.log(error)
-  }
-
+router.get('/products', function (req, res, next) {
+  const callback = (result) => { res.json(result) };
+  getDetails('products', callback);
+  // console.log(result)
+  // res.json(result)
 });
 
+router.get('/cart', function (req, res, next) {
+  const callback = (result) => { res.json(result) };
+  getDetails('cart', callback);
+});
 
-router.post('/placeOrder', function (req, res, next) {
+router.post('/order', function (req, res, next) {
+
+  var itemOutOfStock = [];
 
   try {
     MongoClient.connect(url,
@@ -46,43 +29,82 @@ router.post('/placeOrder', function (req, res, next) {
       function (err, db) {
         if (err) throw err;
         var dbo = db.db("shopping");
-        var items = JSON.parse(req.query.items);
-        var myquery = 0;
-        var newvalues = 0;
-        var updatedStock = 0;
-        var modifiedCount = 0;
+        const callback = (products) => {
+          // console.log(result)
 
-        items.map((elm, i) => {
-          // res.json(elm[1])
-          // console.log(elm.id);
-          myquery = { id: parseInt(elm.id) };
-          updatedStock = ((elm.stock) - 1);
-          newvalues = { $set: { stock: parseInt(updatedStock) } };
-          dbo.collection("products").updateOne(myquery, newvalues, function (err, result) {
-            if (err) throw err;
-            // console.log(result.modifiedCount)
-            modifiedCount += result.modifiedCount;
-            if (i === (items.length - 1)) {
-              dbo.collection("cart").drop(function (err, delOK) {
-                if (err) throw err;
-                if (delOK) console.log("Collection deleted");
-                res.json(true);
-                // console.log(modifiedCount+" document updated");
-                db.close();
-              });
+          // console.log(req.body)
 
-            }
+          var cartitems = req.body;
+          var itemsInStock = 0;
 
-          });
-        })
+          products.map((product, i) => {
+            cartitems.map((cartItem, j) => {
+
+              if (cartItem.id === product.id) {
+                if (product.stock > 0) {
+                  console.log(cartItem.productNameInCart + " : " + product.stock);
+                  itemsInStock += 1;
+                } else {
+                  itemOutOfStock.push(cartItem.productNameInCart);
+                  console.log("Error!");
+                }
+
+              }
+
+            })
+          })
+
+          if (itemsInStock === cartitems.length) {
+            console.log("Order can be placed!");
+
+            var delCount = 0;
+            products.map((product, i) => {
+              cartitems.map((cartItem, j) => {
+
+                if (cartItem.id === product.id) {
+
+                  dbo.collection("products").updateOne({ id: parseInt(cartItem.id) }, { $set: { stock: parseInt((product.stock - 1)) } }, function (err, result) {
+                    if (err) throw err;
+
+                    // cartitems.map((item, index) => {
+                    dbo.collection("cart").deleteOne({ id: cartItem.id }, function (err, delOK) {
+                      if (err) throw err;
+                      if (delOK) console.log("Record deleted!");
+                      delCount += 1;
+                      console.log(delCount + "===" + cartitems.length)
+                      if (delCount === cartitems.length) {
+                        res.status(200).json({ success: true });
+                        db.close();
+                      }
+                    });
+                    // })
+
+                  });
+
+                }
+
+              })
+            })
+
+          } else {
+            console.log(itemOutOfStock)
+            res.status(500).json(itemOutOfStock);
+          }
+
+        }
+        getDetails('products', callback);
       });
   } catch (error) {
     console.log(error)
+    error.status = 500;
+    error.message = JSON.stringify({ success: false });
+    // res.status(500).json({ success: false });
+    next(error)
   }
+
 });
 
-
-router.post('/insertToCart', function (req, res, next) {
+router.post('/cart', function (req, res, next) {
 
   try {
     MongoClient.connect(url,
@@ -90,23 +112,24 @@ router.post('/insertToCart', function (req, res, next) {
       function (err, db) {
         if (err) throw err;
         var dbo = db.db("shopping");
-        var items = JSON.parse(req.query.items);
-        var data = [{ items }];
-
-        // items.map((elm, i) => {
-        //   data.push(elm)
-        // })
+        var items = req.body;
 
         dbo.collection("cart").insertMany([items], function (err, result) {
           if (err) throw err;
-          res.json(true);
-          console.log("Number of documents inserted: " + result.insertedCount);
-          db.close();
+          if (result.insertedCount > 0) {
+            res.json(true);
+            console.log("Number of documents inserted: " + result.insertedCount);
+            db.close();
+          }
         });
 
       });
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    error.status = 500;
+    error.message = JSON.stringify({ success: false });
+    // res.status(500).json({ success: false });
+    next(error)
   }
 
   // var createStream = fs.createWriteStream(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`);
@@ -114,11 +137,7 @@ router.post('/insertToCart', function (req, res, next) {
   // res.json({ filecontent: "file created succfuly" })
 });
 
-
-
-
-
-router.delete('/removefromcart', function (req, res, next) {
+router.delete('/cart/:id', function (req, res, next) {
 
   try {
     MongoClient.connect(url,
@@ -126,14 +145,16 @@ router.delete('/removefromcart', function (req, res, next) {
       function (err, db) {
         if (err) throw err;
         var dbo = db.db("shopping");
-        var id = parseInt(req.query.id);
 
-        var myquery = { id: parseInt(req.query.id) };
-        dbo.collection("cart").deleteOne(myquery, function (err, obj) {
+        var myquery = { id: parseInt(req.params.id) };
+        dbo.collection("cart").deleteOne(myquery, function (err, delOK) {
           if (err) throw err;
-          res.json(true);
-          console.log("1 document deleted");
-          db.close();
+          if (delOK.result.n > 0) {
+            console.log("Record deleted!");
+            res.json(true);
+            db.close();
+          }
+
         });
 
       });
@@ -147,6 +168,5 @@ router.delete('/removefromcart', function (req, res, next) {
 
   // });
 });
-
 
 module.exports = router;

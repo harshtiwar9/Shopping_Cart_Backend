@@ -15,15 +15,24 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//middleware to log information
+app.use(function(req,res,next){
+  console.log("Logging info...")
+  console.log((new Date()).toUTCString());
+  console.log("Request : "+req.method+" "+req.originalUrl+"\n")
+  next();
+})
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function(err,req, res, next) {
+  console.error(err.stack)
   next(createError(404));
 });
 
@@ -35,7 +44,13 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
+  try {
+    res.json(JSON.parse(err.message))
+  } catch (error) {
+    res.json(err.message)
+  }
+  
 });
 
 module.exports = app;
