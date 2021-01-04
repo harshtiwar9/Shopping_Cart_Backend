@@ -1,6 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
@@ -21,9 +22,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //middleware to log information
 app.use(function(req,res,next){
-  console.log("Logging info...")
-  console.log((new Date()).toUTCString());
-  console.log("Request : "+req.method+" "+req.originalUrl+"\n")
+
+  let log = "\nLogging info...\n";
+  log += ((new Date()).toUTCString())+"\n";
+  log += "Request : "+req.method+" "+req.originalUrl+"\n";
+
+  fs.appendFile('log.txt', log, function (err) {
+    if (err) return console.log(err);
+    console.log(log);
+  });
+
   next();
 })
 
@@ -33,7 +41,9 @@ app.use('/', indexRouter);
 // catch 404 and forward to error handler
 app.use(function(err,req, res, next) {
   console.error(err.stack)
-  next(createError(404));
+  res.status(404).json({success: false})
+  // res.render(createError(404))
+  next(err);
 });
 
 // error handler
@@ -42,6 +52,17 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
+  let log = "\nLogging info...\n";
+  log += ((new Date()).toUTCString())+"\n";
+  log += "Request : "+req.method+" "+req.originalUrl+"\n";
+  log += "Error : "+err.status;
+  log += "Error Message : "+err.message;
+
+  // fs.appendFile('log.txt', log, function (err) {
+  //   if (err) return console.log(err);
+  //   console.log(log);
+  // });
+  logInformation("error",log);
   // render the error page
   res.status(err.status || 500);
   // res.render('error');
@@ -50,6 +71,8 @@ app.use(function(err, req, res, next) {
   } catch (error) {
     res.json(err.message)
   }
+
+  console.log("Here!")
   
 });
 

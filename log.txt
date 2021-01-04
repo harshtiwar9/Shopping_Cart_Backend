@@ -1,0 +1,167 @@
+
+Logging info...
+Mon, 04 Jan 2021 00:39:39 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:39:39 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:39:40 GMT
+Request : OPTIONS /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:39:40 GMT
+Request : POST /cart
+Data : Sessel Little added to Cart!
+Logging info...
+Mon, 04 Jan 2021 00:39:46 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:39:46 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:39:50 GMT
+Request : OPTIONS /order
+
+Logging info...
+Mon, 04 Jan 2021 00:39:50 GMT
+Request : POST /order
+Order Placed for Item : Sessel Little , Remaining Stock : 0
+
+Logging info...
+Mon, 04 Jan 2021 00:39:51 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:39:51 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:39:55 GMT
+Request : OPTIONS /order
+
+Logging info...
+Mon, 04 Jan 2021 00:39:55 GMT
+Request : POST /order
+
+Logging info...
+Mon, 04 Jan 2021 00:41:04 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:41:04 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:41:08 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:41:08 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:41:09 GMT
+Request : OPTIONS /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:41:09 GMT
+Request : POST /cart
+Data : Sessel Little added to Cart!
+Logging info...
+Mon, 04 Jan 2021 00:41:11 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:41:11 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:41:13 GMT
+Request : OPTIONS /order
+Order Placed for Item : Sessel Little , Remaining Stock : 0
+
+Logging info...
+Mon, 04 Jan 2021 00:41:15 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:41:15 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:41:16 GMT
+Request : OPTIONS /order
+
+Logging info...
+Mon, 04 Jan 2021 00:41:16 GMT
+Request : POST /order
+
+Logging info...
+Mon, 04 Jan 2021 00:41:18 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:41:18 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:42:57 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:42:57 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:42:58 GMT
+Request : OPTIONS /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:42:58 GMT
+Request : POST /cart
+Data : Sessel Little added to Cart!
+Logging info...
+Mon, 04 Jan 2021 00:43:01 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:43:01 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:43:05 GMT
+Request : OPTIONS /order
+
+Logging info...
+Mon, 04 Jan 2021 00:43:05 GMT
+Request : POST /order
+Order Placed for Item : Sessel Little , Remaining Stock : 0
+
+Logging info...
+Mon, 04 Jan 2021 00:43:07 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 00:43:07 GMT
+Request : GET /cart
+
+Logging info...
+Mon, 04 Jan 2021 00:43:10 GMT
+Request : OPTIONS /order
+
+Logging info...
+Mon, 04 Jan 2021 00:43:10 GMT
+Request : POST /order
+
+Logging info...
+Mon, 04 Jan 2021 04:33:34 GMT
+Request : GET /products
+
+Logging info...
+Mon, 04 Jan 2021 04:33:34 GMT
+Request : GET /cart

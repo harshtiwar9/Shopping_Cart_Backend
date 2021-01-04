@@ -2,16 +2,15 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var mongo = require('mongodb');
-const { getDetails } = require('../service/getDetails');
+const { getDetails, logInformation } = require('../service/Operations');
 
 var MongoClient = mongo.MongoClient;
 var url = "mongodb://localhost:27017/";
+let log = "";
 
 router.get('/products', function (req, res, next) {
   const callback = (result) => { res.json(result) };
   getDetails('products', callback);
-  // console.log(result)
-  // res.json(result)
 });
 
 router.get('/cart', function (req, res, next) {
@@ -55,17 +54,17 @@ router.post('/order', function (req, res, next) {
           })
 
           if (itemsInStock === cartitems.length) {
-            console.log("Order can be placed!");
+            // console.log("Order can be placed!");
 
             var delCount = 0;
-            products.map((product, i) => {
-              cartitems.map((cartItem, j) => {
+            cartitems.map((cartItem, j) => {
+              products.map((product, i) => {
 
                 if (cartItem.id === product.id) {
 
                   dbo.collection("products").updateOne({ id: parseInt(cartItem.id) }, { $set: { stock: parseInt((product.stock - 1)) } }, function (err, result) {
                     if (err) throw err;
-
+                    log += "Order Placed for Item : " + product.name + " , Remaining Stock : " + parseInt((product.stock - 1)) + "\n";
                     // cartitems.map((item, index) => {
                     dbo.collection("cart").deleteOne({ id: cartItem.id }, function (err, delOK) {
                       if (err) throw err;
@@ -73,6 +72,8 @@ router.post('/order', function (req, res, next) {
                       delCount += 1;
                       console.log(delCount + "===" + cartitems.length)
                       if (delCount === cartitems.length) {
+                        console.log(log)
+                        logInformation(req.method + " " + req.originalUrl, log);
                         res.status(200).json({ success: true });
                         db.close();
                       }
@@ -87,19 +88,22 @@ router.post('/order', function (req, res, next) {
             })
 
           } else {
-            console.log(itemOutOfStock)
+            console.log(itemOutOfStock);
             res.status(500).json(itemOutOfStock);
           }
 
         }
         getDetails('products', callback);
       });
-  } catch (error) {
-    console.log(error)
-    error.status = 500;
-    error.message = JSON.stringify({ success: false });
+  } catch (err) {
+
+    console.log(itemOutOfStock);
+    res.status(500).json(itemOutOfStock);
+    console.log(err)
+    err.status = 500;
+    err.message = JSON.stringify({ success: false });
     // res.status(500).json({ success: false });
-    next(error)
+    next(err)
   }
 
 });
@@ -119,6 +123,10 @@ router.post('/cart', function (req, res, next) {
           if (result.insertedCount > 0) {
             res.json(true);
             console.log("Number of documents inserted: " + result.insertedCount);
+
+            log = "Data : " + items.productNameInCart + " added to Cart!";
+            logInformation(req.method + " " + req.originalUrl, log);
+            log = "";
             db.close();
           }
         });
@@ -150,6 +158,8 @@ router.delete('/cart/:id', function (req, res, next) {
         dbo.collection("cart").deleteOne(myquery, function (err, delOK) {
           if (err) throw err;
           if (delOK.result.n > 0) {
+            log = parseInt(req.params.id);
+            logInformation(req.method + " " + req.originalUrl, log);
             console.log("Record deleted!");
             res.json(true);
             db.close();
@@ -159,14 +169,12 @@ router.delete('/cart/:id', function (req, res, next) {
 
       });
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    error.status = 500;
+    error.message = JSON.stringify({ success: false });
+    next(error)
   }
 
-  // fs.unlink(`E:\\MERN\\Backend_Shopping_Cart\\${req.query.params}.txt`, (err) => {
-  //   if (err) throw err;
-  //   res.json({ filecontent: 'path/file.txt was deleted' })
-
-  // });
 });
 
 module.exports = router;
