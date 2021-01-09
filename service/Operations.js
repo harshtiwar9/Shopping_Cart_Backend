@@ -64,6 +64,15 @@ function logInformation(action, data) {
             });
 
 
+        } else if (action === "POST /signup") {
+
+            log = "Data : "+data;
+            fs.appendFile('log.txt', log, function (err) {
+                if (err) return console.log(err);
+                console.log({data});
+            });
+
+
         } else if (action === "error") {
 
             fs.appendFile('log.txt', data, function (err) {
